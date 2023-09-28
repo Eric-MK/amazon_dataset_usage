@@ -17,7 +17,15 @@ pivot_language = 'en-US'
 # Specify the partition to extract (e.g., 'train')
 partition_to_extract = 'train'
 
-# Loop through the JSONL files
+# Read the English JSONL file
+en_us_jsonl_file_path = os.path.join(input_folder, 'en-US.jsonl')
+en_us_translations = {}
+with jsonlines.open(en_us_jsonl_file_path, 'r') as reader:
+    for item in reader:
+        if item['partition'] == partition_to_extract:
+            en_us_translations[item['id']] = item['utt']
+
+# Loop through the JSONL files for other languages
 for jsonl_file in jsonl_files:
     # Extract the language code from the file name
     lang = jsonl_file.split('.')[0]
@@ -28,13 +36,20 @@ for jsonl_file in jsonl_files:
         for item in reader:
             # Check if the item belongs to the specified partition ('train')
             if item['partition'] == partition_to_extract:
-                # Extract the 'id' and 'utt' fields and add them to the translations dictionary
-                if lang != pivot_language:
-                    # Initialize the translation dictionary for the current language if not exists
-                    if lang not in translations:
-                        translations[lang] = {}
-                    # Use the 'id' from 'en-US' as the key and the 'utt' as the value for translation
-                    translations[lang][item['id']] = item['utt']
+                # Initialize the translation dictionary for the current language if not exists
+                if lang not in translations:
+                    translations[lang] = {}
+                
+                # Use the 'id' from the current language as the key
+                # and include both the translation and the English text (from "en-US" dataset)
+                translation_item = {
+                    item['id']: {
+                        'Command': item['utt'],
+                        'English-Translation': en_us_translations.get(item['id'], 'Translation not found in English')
+                    }
+                }
+                
+                translations[lang].update(translation_item)
 
 # Save the translations as a JSON file with pretty printing
 output_file = r"C:\Users\Eric\Desktop\codeamazone\outputs\en-xx.json"  # Specify the output file path
