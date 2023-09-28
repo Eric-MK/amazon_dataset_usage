@@ -1,7 +1,6 @@
 import os
 import jsonlines
-import json
-from pprint import pprint
+import pprint
 
 # Specify the folder path where the original JSONL files are located (the dataset directory)
 input_folder = r"C:\Users\Eric\Desktop\amazon-massive-dataset-1.0\1.0\data"
@@ -29,24 +28,18 @@ for jsonl_file in jsonl_files:
         for item in reader:
             # Check if the item belongs to the specified partition ('train')
             if item['partition'] == partition_to_extract:
-                # Extract the 'id' and 'utt' fields
-                command_id = item['id']
-                english_text = item['utt']
-                
-                # Initialize the translation dictionary for the current language if not exists
-                if lang not in translations:
-                    translations[lang] = {}
-                
-                # For all languages, use the English command ID and text as the translation
-                translations[lang][command_id] = {
-                    "English": english_text,
-                    "Translation": english_text
-                }
+                # Extract the 'id' and 'utt' fields and add them to the translations dictionary
+                if lang != pivot_language:
+                    # Initialize the translation dictionary for the current language if not exists
+                    if lang not in translations:
+                        translations[lang] = {}
+                    # Use the 'id' from 'en-US' as the key and the 'utt' as the value for translation
+                    translations[lang][item['id']] = item['utt']
 
 # Save the translations as a JSON file with pretty printing
 output_file = r"C:\Users\Eric\Desktop\codeamazone\outputs\en-xx.json"  # Specify the output file path
 os.makedirs(os.path.dirname(output_file), exist_ok=True)  # Create the necessary output directory
 with open(output_file, 'w', encoding='utf-8') as json_file:
-    json.dump(translations, json_file, indent=4, ensure_ascii=False)
+    pprint.pprint(translations, json_file, indent=4, sort_dicts=False)
 
 print(f"Translations saved to '{output_file}'.")
