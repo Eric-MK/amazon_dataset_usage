@@ -44,8 +44,8 @@ for jsonl_file in jsonl_files:
                 # and include both the translation and the English text (from "en-US" dataset)
                 translation_item = {
                     item['id']: {
-                        'Command': item['utt'],
-                        'English-Translation': en_us_translations.get(item['id'], 'Translation not found in English')
+                        'English-Translation': en_us_translations.get(item['id'], 'Translation not found in English'),
+                        'Command': item['utt']
                     }
                 }
                 
